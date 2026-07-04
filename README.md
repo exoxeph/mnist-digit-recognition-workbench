@@ -65,11 +65,9 @@ Pixel noise and mild blur barely move the needle - the CNN's learned features ar
 
 ## V4: live drawing demo
 
-<!-- Replace this with a real screenshot: run `poetry run streamlit run app/streamlit_app.py`,
-     draw a digit, screenshot the result, and save it to screenshots/app_screenshot.png -->
-![Streamlit app screenshot placeholder - add screenshots/app_screenshot.png](screenshots/app_screenshot.png)
+![MNIST Digit Recognition Workbench Streamlit app showing the Load Test Sample tab with digit 8 selected, a green CORRECT verdict banner at 100% confidence, a metrics row (predicted digit, confidence, confidence band, true label), a top-3 prediction bar chart, and the 28x28 preprocessed preview](screenshots/app_screenshot.png)
 
-Draw a digit, hit Predict, and the app shows the predicted digit, a confidence score with a high/medium/low band, the top-3 candidate digits, and the actual 28x28 image the model sees. Confidence banding isn't cosmetic: a small or off-center digit genuinely confuses the model (see the robustness numbers above for why), and the app surfaces that honestly with a low-confidence warning instead of a falsely-certain answer.
+Draw a digit or load a real test-set sample (one example per digit 0-9), hit Predict, and the app shows a color-coded verdict banner, a confidence score with a high/medium/low band, a top-3 prediction breakdown, and the actual 28x28 image the model sees. Confidence banding isn't cosmetic: a small or off-center digit genuinely confuses the model (see the robustness numbers above for why), and the app surfaces that honestly with a low-confidence warning instead of a falsely-certain answer.
 
 ## Setup
 
