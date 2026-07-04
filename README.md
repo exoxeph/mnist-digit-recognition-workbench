@@ -77,7 +77,7 @@ flowchart LR
 
 ![MNIST Digit Recognition Workbench Streamlit app showing the Load Test Sample tab with digit 8 selected, a green CORRECT verdict banner at 100% confidence, a metrics row (predicted digit, confidence, confidence band, true label), a top-3 prediction bar chart, and the 28x28 preprocessed preview](screenshots/app_screenshot.png)
 
-Draw a digit or load a real test-set sample (one example per digit 0-9), hit Predict, and the app shows a color-coded verdict banner, a confidence score with a high/medium/low band, a top-3 prediction breakdown, and the actual 28x28 image the model sees. Confidence banding isn't cosmetic: a small or off-center digit genuinely confuses the model (see the robustness numbers above for why), and the app surfaces that honestly with a low-confidence warning instead of a falsely-certain answer.
+Draw a digit or load a real test-set sample (one example per digit 0-9), hit Predict, and the app shows a color-coded verdict banner, a confidence score with a high/medium/low band, a top-3 prediction breakdown, and the actual 28x28 image the model sees. The canvas preprocessing crops to your strokes' bounding box and re-centers by center-of-mass (matching MNIST's own convention), so small or off-center drawings work correctly - but decorative handwriting flourishes MNIST never saw during training can still trip up the model, and confidence banding surfaces that honestly with a low-confidence warning instead of a falsely-certain answer.
 
 ## Setup
 
@@ -122,11 +122,10 @@ poetry run pytest -v
 
 - Trained only on Kaggle's `train.csv` (~42k images); Kaggle's own `test.csv` has no labels and isn't used for evaluation.
 - Confidence-band thresholds (0.9 / 0.6) are reasonable defaults, not empirically tuned.
-- The Streamlit canvas input isn't cropped/centered the way MNIST's own preprocessing centers digits by center-of-mass, so live predictions on small or off-center drawings are noticeably less reliable than the reported test metrics - this is the same mechanism the robustness results above quantify (shift perturbation costs 61 points of accuracy).
+- The Streamlit canvas crops to the drawn strokes' bounding box and re-centers by center-of-mass to match MNIST's own preprocessing convention (see `app/streamlit_app.py::canvas_to_28x28`), but stroke *style* still differs from real MNIST handwriting - decorative flourishes (serifs, flags) that MNIST's training data never contains can still be misread, since that's a style gap rather than a position/scale gap.
 
 ## Future improvements
 
-- Center-of-mass crop-and-center preprocessing for the live canvas input, to close the gap described above.
 - Data augmentation targeted at the most-confused digit pairs (8 vs 5/3/9).
 - A deeper CNN with batch normalization/dropout.
 - A "model audit assistant" that automatically summarizes `reports/` into a human-readable health check (not built in this version - noted here as a future direction only).
