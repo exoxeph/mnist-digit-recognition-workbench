@@ -61,7 +61,17 @@ Pixel noise and mild blur barely move the needle - the CNN's learned features ar
 
 ## Pipeline shape
 
-![Pipeline diagram: Kaggle CSV through common/load_data and common/preprocess, splitting into V1 logistic regression and V2 CNN, both scored by common/evaluate, feeding into V3 error analysis and V3 robustness testing, ending in the V4 Streamlit app](screenshots/pipeline-diagram.png)
+```mermaid
+flowchart LR
+    A["Kaggle CSV<br/>train.csv (42k rows)"] --> B["src/common/<br/>load_data + preprocess"]
+    B --> C["V1 baseline<br/>LogisticRegression<br/>acc 0.9126"]
+    B --> D["V2 CNN<br/>PyTorch CNN<br/>acc 0.9845"]
+    C --> E["common/evaluate<br/>metrics + confusion matrix"]
+    D --> E
+    E --> F["V3 error analysis<br/>confusion pairs + confidence bands"]
+    F --> G["V3 robustness<br/>rotate / shift / noise / blur"]
+    G --> H["V4 Streamlit app<br/>draw or load sample -&gt; predict + confidence"]
+```
 
 ## V4: live drawing demo
 
