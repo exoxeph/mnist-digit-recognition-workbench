@@ -1,0 +1,12 @@
+numpy
+pandas
+scikit-learn
+torch
+scipy
+matplotlib
+joblib
+streamlit
+streamlit-drawable-canvas
+Pillow
+kaggle
+pytest
