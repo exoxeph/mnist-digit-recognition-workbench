@@ -4,12 +4,16 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+.pytest_cache/
 
 # Data & models (do not commit without explicit approval)
 data/raw/
 data/processed/
 models/*.pt
 models/*.joblib
+
+# Secrets
+.env
 
 # OS
 .DS_Store
