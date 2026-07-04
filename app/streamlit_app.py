@@ -6,6 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import numpy as np
 import streamlit as st
 from PIL import Image
+from scipy.ndimage import shift as ndi_shift
 from streamlit_drawable_canvas import st_canvas
 
 from src.common import config, load_data, preprocess, predict
@@ -89,9 +90,43 @@ def get_sample_digits():
 
 
 def canvas_to_28x28(canvas_image_rgba):
+    """Crop to the drawn strokes' bounding box, resize into a 20x20 area
+    preserving aspect ratio, then center by center-of-mass in the 28x28
+    frame - matching MNIST's own preprocessing convention, instead of a
+    naive full-canvas resize."""
     image = Image.fromarray(canvas_image_rgba.astype("uint8"), mode="RGBA").convert("L")
-    image = image.resize((config.IMAGE_SIZE, config.IMAGE_SIZE))
-    return np.array(image, dtype=np.float32)
+    arr = np.array(image, dtype=np.float32)
+
+    ys, xs = np.where(arr > 0)
+    if len(xs) == 0:
+        return np.zeros((config.IMAGE_SIZE, config.IMAGE_SIZE), dtype=np.float32)
+
+    x_min, x_max = xs.min(), xs.max()
+    y_min, y_max = ys.min(), ys.max()
+    cropped = arr[y_min : y_max + 1, x_min : x_max + 1]
+
+    h, w = cropped.shape
+    target = config.IMAGE_SIZE - 8  # 20x20 within a 28x28 frame, per MNIST's convention
+    scale = target / max(h, w)
+    new_h = max(1, round(h * scale))
+    new_w = max(1, round(w * scale))
+    resized = Image.fromarray(cropped.astype("uint8")).resize((new_w, new_h), Image.LANCZOS)
+    resized_arr = np.array(resized, dtype=np.float32)
+
+    canvas28 = np.zeros((config.IMAGE_SIZE, config.IMAGE_SIZE), dtype=np.float32)
+    top = (config.IMAGE_SIZE - new_h) // 2
+    left = (config.IMAGE_SIZE - new_w) // 2
+    canvas28[top : top + new_h, left : left + new_w] = resized_arr
+
+    total = canvas28.sum()
+    if total > 0:
+        rows, cols = np.indices(canvas28.shape)
+        center = config.IMAGE_SIZE / 2
+        cy = (rows * canvas28).sum() / total
+        cx = (cols * canvas28).sum() / total
+        canvas28 = ndi_shift(canvas28, shift=(center - cy, center - cx), mode="constant", cval=0.0)
+
+    return np.clip(canvas28, 0, 255)
 
 
 def render_result(result, image_28x28, true_digit=None):
